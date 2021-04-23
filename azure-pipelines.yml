@@ -1,0 +1,45 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- master
+
+pool:
+  #vmImage: 'ubuntu-latest'
+  name: 'SonarQube'
+
+steps:
+
+#- task: JavaToolInstaller@0
+ # inputs:
+  #  versionSpec: '11'
+  #  jdkArchitectureOption: 'x64'
+  #  jdkSourceOption: 'PreInstalled'
+- task: Maven@3
+  inputs:
+    #versionSpec: "11"
+    jdkArchitectureOption: x64
+    jdkSourceOption: LocalDirectory
+    jdkFile: "/usr/local/src/openjdk-11.0.2_linux-x64_bin.tar.gz"
+    #jdkDestinationDirectory: "/usr/local/src/externals"
+    cleanDestinationDirectory: false
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-Xmx3072m'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: 'default'
+    #jdkArchitectureOption: 'x64'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    #goals: 'clean verify'
+    goals: 'clean package'
+- task: SonarQubePrepare@4
+  inputs:
+    SonarQube: 'SonarQube'
+    scannerMode: 'CLI'
+    configMode: 'file'
+- task: SonarQubeAnalyze@4
+- task: SonarQubePublish@4
+  inputs:
+    pollingTimeoutSec: '300'
